@@ -1,0 +1,30 @@
+{
+  "name": "prettier-plugin-eruby",
+  "version": "0.0.1",
+  "description": "Prettier plugin for eRuby(erb)",
+  "main": "dist/index.ts",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ippachi/prettier-plugin-eruby.git"
+  },
+  "keywords": [
+    "prettier",
+    "eruby",
+    "erb"
+  ],
+  "author": "ippachi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ippachi/prettier-plugin-eruby/issues"
+  },
+  "homepage": "https://github.com/ippachi/prettier-plugin-eruby#readme",
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  }
+}
