@@ -1,4 +1,5 @@
-import {AST, AstPath, Doc} from "prettier"
+import {AST, AstPath, Doc, ParserOptions} from "prettier"
+import * as prettier from "prettier"
 
 const languages = [
   {
@@ -7,8 +8,8 @@ const languages = [
   }
 ]
 
-function parse(text: string, options: object): Promise<AST> | AST {
-  return text;
+async function parse(text: string, options: ParserOptions): Promise<AST> {
+  return await prettier.format(text, { parser: "html" })
 }
 
 function locStart(node: object): number {
@@ -29,16 +30,12 @@ const parsers = {
 }
 
 function print(path: AstPath, options: object, print: (selector: AstPath<any>) => Doc): Doc {
-  console.log(path)
-  return(
-`console.log(1)
-`
-  )
+  return path.getNode();
 }
 
 const printers = {
   "eruby-ast": {
-    print
+    print,
   }
 }
 

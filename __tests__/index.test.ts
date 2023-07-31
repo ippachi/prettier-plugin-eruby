@@ -2,13 +2,13 @@ import {expect, test} from '@jest/globals';
 import * as prettier from "prettier"
 import erubyParse from "../index"
 
-test("Check", async () => {
+test("format html", async () => {
   const code =
-`console.log(1)
+`<DIV>test</DIV>
 `
   const result = await prettier.format(code, { parser: "eruby-parse", plugins: [erubyParse] })
   expect(result).toBe(
-`console.log(1)
+`<div>test</div>
 `
   )
 })
