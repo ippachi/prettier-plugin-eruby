@@ -12,3 +12,20 @@ test("format html", async () => {
 `
   )
 })
+
+test("format signle line <% %>", async () => {
+  const code =
+`<DIV>
+  test
+  <% test %>
+</DIV>
+`
+  const result = await prettier.format(code, { parser: "eruby-parse", plugins: [erubyParse] })
+  expect(result).toBe(
+`<div>
+  test
+  <% test %>
+</div>
+`
+  )
+})
