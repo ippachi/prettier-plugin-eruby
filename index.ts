@@ -18,7 +18,7 @@ class ErbPrettierPlugin {
   }
 
   async parse(text: string, options: ParserOptions): Promise<AST> {
-    this.matchResult = text.match(/<%\s.*\s%>/)
+    this.matchResult = text.match(/<%([\s\n]*?).*([\s\n]*?)%>/)
     const targetText = this.replaceErbElementToMarker(text, this.matchResult)
     return await prettier.format(targetText, { parser: "html" })
   }
