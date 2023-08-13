@@ -34,7 +34,7 @@ class ErbPrettierPlugin {
     this.erbTags = {}
 
     // The reason for reverse() is that the index is broken when replacing
-    const reverseMatchResults = Array.from(text.matchAll(/([^\S\r\n]*)<%[\s\n]*[\s\S]*?[\s\n]*%>/gm)).reverse()
+    const reverseMatchResults = Array.from(text.matchAll(/([^\S\r\n]*)<%[\s\n]*.*?[\s\n]*%>/gs)).reverse()
     reverseMatchResults.forEach((currentMatchResult, i) => {
       this.erbTags[i] = (this.erbTagFromMatchResult(currentMatchResult))
     })
