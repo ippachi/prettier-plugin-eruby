@@ -18,27 +18,30 @@ class ErbElement {
     this.#matchResult = matchResult
   }
 
-  indentedContent(spaces: string) {
-    return this.#content.split("\n").map((line) => `${spaces}${line}`).join("\n")
-  }
-
   replaceErbElementToTag(text: string) {
     return text.substring(0, this.#originalPositionIndex) +
       this.#erbTag +
       text.substring(this.#originalPositionIndex + this.#originalContentLength)
   }
 
+  replaceErbTagToElement(text: string) {
+    const markMatchResult = text.match(this.#originalContentRegExp)
+    assert(markMatchResult)
+    return text.replace(this.#originalContentRegExp, this.#indentedContent(markMatchResult[1]))
+  }
+
+  get #originalContentRegExp() { return new RegExp(`([^\\S\\r\\n]*)(${this.#erbTag})`) }
   get #originalPositionIndex() { return this.#matchResult.index as number }
   get #originalContentLength() { return this.#matchResult[0].length }
   get #erbTag() { return `<erb-${this.#tagId} />` }
 
-  get #content() {
-    return this.#matchResult[0]
-               .split("\n")
-               .map((line) => line.replace(new RegExp(`^${this.#matchResult[1]}`), ""))
-               .join("\n")
+  #indentedContent(spaces: string) {
+    const HeadWhitespaceRemovedContent = this.#matchResult[0]
+                                             .split("\n")
+                                             .map((line) => line.replace(new RegExp(`^${this.#matchResult[1]}`), ""))
+                                             .join("\n")
+    return HeadWhitespaceRemovedContent.split("\n").map((line) => `${spaces}${line}`).join("\n")
   }
-
 }
 
 class ErbPrettierPlugin {
@@ -72,15 +75,8 @@ class ErbPrettierPlugin {
 
   print(path: AstPath, options: object, print: (selector: AstPath<any>) => Doc): Doc {
     let result = path.getNode() as string;
-    for (const [id, erbElement] of Object.entries(this.#erbElements)) {
-      const markMatchResult = result.match(new RegExp(`([^\S\r\n]*)(?=${this.#erbTag(id)})`))
-      assert(markMatchResult)
-      result = result.replace(new RegExp(`[^\S\r\n]*${this.#erbTag(id)}`), erbElement.indentedContent(markMatchResult[1]))
-    }
-    return result;
+    return this.#erbElements.reduce((acc, erbElement) => erbElement.replaceErbTagToElement(acc), result)
   }
-
-  #erbTag(id: number | string) { return `<erb-${id} />` }
 }
 
 const erbPrettierPlugin = new ErbPrettierPlugin()
