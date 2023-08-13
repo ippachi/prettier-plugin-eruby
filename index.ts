@@ -22,23 +22,23 @@ class ErbElement {
 }
 
 class ErbPrettierPlugin {
-  public astFormat: string
-  private erbElements: Record<number, ErbElement>
+  astFormat: string
+  #erbElements: Record<number, ErbElement>
 
   constructor() {
-    this.erbElements = {}
+    this.#erbElements = {}
     this.astFormat = "eruby-ast"
   }
 
   async parse(text: string, options: ParserOptions): Promise<AST> {
-    this.erbElements = {}
+    this.#erbElements = {}
 
     // The reason for reverse() is that the index is broken when replacing
     const reverseMatchResults = Array.from(text.matchAll(/([^\S\r\n]*)<%[\s\n]*.*?[\s\n]*%>/gs)).reverse()
     reverseMatchResults.forEach((currentMatchResult, i) => {
-      this.erbElements[i] = (this.erbElementFromMatchResult(currentMatchResult))
+      this.#erbElements[i] = (this.#erbElementFromMatchResult(currentMatchResult))
     })
-    const replacedText = reverseMatchResults.reduce(this.replaceErbElementToMark, text)
+    const replacedText = reverseMatchResults.reduce(this.#replaceErbElementToMark, text)
     return await prettier.format(replacedText, { parser: "html" })
   }
 
@@ -52,7 +52,7 @@ class ErbPrettierPlugin {
 
   print(path: AstPath, options: object, print: (selector: AstPath<any>) => Doc): Doc {
     let result = path.getNode() as string;
-    for (const [id, erbElement] of Object.entries(this.erbElements)) {
+    for (const [id, erbElement] of Object.entries(this.#erbElements)) {
       const markMatchResult = result.match(new RegExp(`([^\S\r\n]*)(?=<erb-${id} />)`))
       assert(markMatchResult)
       result = result.replace(new RegExp(`[^\S\r\n]*<erb-${id} />`), erbElement.indentedContent(markMatchResult[1]))
@@ -60,14 +60,14 @@ class ErbPrettierPlugin {
     return result;
   }
 
-  private replaceErbElementToMark(text: string, matchResult: RegExpMatchArray, id: number) {
+  #replaceErbElementToMark(text: string, matchResult: RegExpMatchArray, id: number) {
     assert(typeof matchResult.index == "number")
     return text.substring(0, matchResult.index) +
       `<erb-${id} />` +
       text.substring(matchResult.index + matchResult[0].length)
   }
 
-  private erbElementFromMatchResult(matchResult: RegExpMatchArray) {
+  #erbElementFromMatchResult(matchResult: RegExpMatchArray) {
     assert(typeof matchResult.index == "number")
     const content =
       matchResult[0].split("\n").map((line) => line.replace(new RegExp(`^${matchResult[1]}`), "")).join("\n")
