@@ -24,7 +24,8 @@ test("format invalid indent multi line <% %>", async () => {
 `<DIV>
   test
       <%
-        test
+        test1
+        test2
       %>
 </DIV>
 `
@@ -33,7 +34,8 @@ test("format invalid indent multi line <% %>", async () => {
 `<div>
   test
   <%
-    test
+    test1
+    test2
   %>
 </div>
 `

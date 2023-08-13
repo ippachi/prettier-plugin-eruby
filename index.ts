@@ -31,7 +31,7 @@ class ErbPrettierPlugin {
   }
 
   async parse(text: string, options: ParserOptions): Promise<AST> {
-    const matchResult = text.match(/([^\S\r\n]*)<%[\s\n]*.*[\s\n]*%>/)
+    const matchResult = text.match(/([^\S\r\n]*)<%[\s\n]*[\s\S]*[\s\n]*%>/m)
     if (matchResult === null) return await prettier.format(text, { parser: "html" })
 
     assert(matchResult.index);
