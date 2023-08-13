@@ -9,7 +9,7 @@ const languages = [
   }
 ]
 
-class ErbTag {
+class ErbElement {
   private content: string
 
   constructor(content: string) {
@@ -23,22 +23,22 @@ class ErbTag {
 
 class ErbPrettierPlugin {
   public astFormat: string
-  private erbTags: Record<number, ErbTag>
+  private erbElements: Record<number, ErbElement>
 
   constructor() {
-    this.erbTags = {}
+    this.erbElements = {}
     this.astFormat = "eruby-ast"
   }
 
   async parse(text: string, options: ParserOptions): Promise<AST> {
-    this.erbTags = {}
+    this.erbElements = {}
 
     // The reason for reverse() is that the index is broken when replacing
     const reverseMatchResults = Array.from(text.matchAll(/([^\S\r\n]*)<%[\s\n]*.*?[\s\n]*%>/gs)).reverse()
     reverseMatchResults.forEach((currentMatchResult, i) => {
-      this.erbTags[i] = (this.erbTagFromMatchResult(currentMatchResult))
+      this.erbElements[i] = (this.erbElementFromMatchResult(currentMatchResult))
     })
-    const replacedText = reverseMatchResults.reduce(this.replaceErbTagToMark, text)
+    const replacedText = reverseMatchResults.reduce(this.replaceErbElementToMark, text)
     return await prettier.format(replacedText, { parser: "html" })
   }
 
@@ -52,26 +52,26 @@ class ErbPrettierPlugin {
 
   print(path: AstPath, options: object, print: (selector: AstPath<any>) => Doc): Doc {
     let result = path.getNode() as string;
-    for (const [id, erbTag] of Object.entries(this.erbTags)) {
-      const markMatchResult = result.match(new RegExp(`([^\S\r\n]*)(?=<erb data-id="${id}" />)`))
+    for (const [id, erbElement] of Object.entries(this.erbElements)) {
+      const markMatchResult = result.match(new RegExp(`([^\S\r\n]*)(?=<erb-${id} />)`))
       assert(markMatchResult)
-      result = result.replace(new RegExp(`[^\S\r\n]*<erb data-id="${id}" />`), erbTag.indentedContent(markMatchResult[1]))
+      result = result.replace(new RegExp(`[^\S\r\n]*<erb-${id} />`), erbElement.indentedContent(markMatchResult[1]))
     }
     return result;
   }
 
-  private replaceErbTagToMark(text: string, matchResult: RegExpMatchArray, id: number) {
+  private replaceErbElementToMark(text: string, matchResult: RegExpMatchArray, id: number) {
     assert(typeof matchResult.index == "number")
     return text.substring(0, matchResult.index) +
-      `<erb data-id="${id}" />` +
+      `<erb-${id} />` +
       text.substring(matchResult.index + matchResult[0].length)
   }
 
-  private erbTagFromMatchResult(matchResult: RegExpMatchArray) {
+  private erbElementFromMatchResult(matchResult: RegExpMatchArray) {
     assert(typeof matchResult.index == "number")
     const content =
       matchResult[0].split("\n").map((line) => line.replace(new RegExp(`^${matchResult[1]}`), "")).join("\n")
-    return new ErbTag(content)
+    return new ErbElement(content)
   }
 }
 

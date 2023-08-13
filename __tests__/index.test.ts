@@ -2,7 +2,7 @@ import {expect, test} from '@jest/globals';
 import * as prettier from "prettier"
 import erubyParse from "../index"
 
-test("format multiple erb tags", async () => {
+test("format multiple erb elements", async () => {
   const code =
 `<DIV>
   test
