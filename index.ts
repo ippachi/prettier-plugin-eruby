@@ -22,32 +22,43 @@ class ErbElement {
     return this.#content.split("\n").map((line) => `${spaces}${line}`).join("\n")
   }
 
+  replaceErbElementToTag(text: string) {
+    return text.substring(0, this.#originalPositionIndex) +
+      this.#erbTag +
+      text.substring(this.#originalPositionIndex + this.#originalContentLength)
+  }
+
+  get #originalPositionIndex() { return this.#matchResult.index as number }
+  get #originalContentLength() { return this.#matchResult[0].length }
+  get #erbTag() { return `<erb-${this.#tagId} />` }
+
   get #content() {
     return this.#matchResult[0]
                .split("\n")
                .map((line) => line.replace(new RegExp(`^${this.#matchResult[1]}`), ""))
                .join("\n")
   }
+
 }
 
 class ErbPrettierPlugin {
   astFormat: string
-  #erbElements: Record<number, ErbElement>
+  #erbElements: ErbElement[]
 
   constructor() {
-    this.#erbElements = {}
+    this.#erbElements = []
     this.astFormat = "eruby-ast"
   }
 
   async parse(text: string, options: ParserOptions): Promise<AST> {
-    this.#erbElements = {}
+    this.#erbElements = []
 
     // The reason for reverse() is that the index is broken when replacing
     const reverseMatchResults = Array.from(text.matchAll(/([^\S\r\n]*)<%[\s\n]*.*?[\s\n]*%>/gs)).reverse()
     reverseMatchResults.forEach((currentMatchResult, i) => {
-      this.#erbElements[i] = new ErbElement(i, currentMatchResult)
+      this.#erbElements.push(new ErbElement(i, currentMatchResult))
     })
-    const replacedText = reverseMatchResults.reduce(this.#replaceErbElementToMark.bind(this), text)
+    const replacedText = this.#erbElements.reduce((acc, erbElement) => erbElement.replaceErbElementToTag(acc), text)
     return await prettier.format(replacedText, { parser: "html" })
   }
 
@@ -67,13 +78,6 @@ class ErbPrettierPlugin {
       result = result.replace(new RegExp(`[^\S\r\n]*${this.#erbTag(id)}`), erbElement.indentedContent(markMatchResult[1]))
     }
     return result;
-  }
-
-  #replaceErbElementToMark(text: string, matchResult: RegExpMatchArray, id: number) {
-    assert(typeof matchResult.index == "number")
-    return text.substring(0, matchResult.index) +
-      this.#erbTag(id) +
-      text.substring(matchResult.index + matchResult[0].length)
   }
 
   #erbTag(id: number | string) { return `<erb-${id} />` }
