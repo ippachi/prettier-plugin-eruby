@@ -31,6 +31,8 @@ class ErbPrettierPlugin {
   }
 
   async parse(text: string, options: ParserOptions): Promise<AST> {
+    this.erbTags = {}
+
     // The reason for reverse() is that the index is broken when replacing
     const reverseMatchResults = Array.from(text.matchAll(/([^\S\r\n]*)<%[\s\n]*[\s\S]*?[\s\n]*%>/gm)).reverse()
     reverseMatchResults.forEach((currentMatchResult, i) => {
@@ -59,14 +61,14 @@ class ErbPrettierPlugin {
   }
 
   private replaceErbTagToMark(text: string, matchResult: RegExpMatchArray, id: number) {
-    assert(matchResult.index)
+    assert(typeof matchResult.index == "number")
     return text.substring(0, matchResult.index) +
       `<erb data-id="${id}" />` +
       text.substring(matchResult.index + matchResult[0].length)
   }
 
   private erbTagFromMatchResult(matchResult: RegExpMatchArray) {
-    assert(matchResult.index)
+    assert(typeof matchResult.index == "number")
     const content =
       matchResult[0].split("\n").map((line) => line.replace(new RegExp(`^${matchResult[1]}`), "")).join("\n")
     return new ErbTag(content)
