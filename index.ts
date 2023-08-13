@@ -38,7 +38,7 @@ class ErbPrettierPlugin {
     reverseMatchResults.forEach((currentMatchResult, i) => {
       this.#erbElements[i] = (this.#erbElementFromMatchResult(currentMatchResult))
     })
-    const replacedText = reverseMatchResults.reduce(this.#replaceErbElementToMark, text)
+    const replacedText = reverseMatchResults.reduce(this.#replaceErbElementToMark.bind(this), text)
     return await prettier.format(replacedText, { parser: "html" })
   }
 
@@ -53,9 +53,9 @@ class ErbPrettierPlugin {
   print(path: AstPath, options: object, print: (selector: AstPath<any>) => Doc): Doc {
     let result = path.getNode() as string;
     for (const [id, erbElement] of Object.entries(this.#erbElements)) {
-      const markMatchResult = result.match(new RegExp(`([^\S\r\n]*)(?=<erb-${id} />)`))
+      const markMatchResult = result.match(new RegExp(`([^\S\r\n]*)(?=${this.#erbTag(id)})`))
       assert(markMatchResult)
-      result = result.replace(new RegExp(`[^\S\r\n]*<erb-${id} />`), erbElement.indentedContent(markMatchResult[1]))
+      result = result.replace(new RegExp(`[^\S\r\n]*${this.#erbTag(id)}`), erbElement.indentedContent(markMatchResult[1]))
     }
     return result;
   }
@@ -63,7 +63,7 @@ class ErbPrettierPlugin {
   #replaceErbElementToMark(text: string, matchResult: RegExpMatchArray, id: number) {
     assert(typeof matchResult.index == "number")
     return text.substring(0, matchResult.index) +
-      `<erb-${id} />` +
+      this.#erbTag(id) +
       text.substring(matchResult.index + matchResult[0].length)
   }
 
@@ -73,6 +73,8 @@ class ErbPrettierPlugin {
       matchResult[0].split("\n").map((line) => line.replace(new RegExp(`^${matchResult[1]}`), "")).join("\n")
     return new ErbElement(content)
   }
+
+  #erbTag(id: number | string) { return `<erb-${id} />` }
 }
 
 const erbPrettierPlugin = new ErbPrettierPlugin()
