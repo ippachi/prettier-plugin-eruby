@@ -10,14 +10,23 @@ const languages = [
 ]
 
 class ErbElement {
-  private content: string
+  #tagId: number
+  #matchResult: RegExpMatchArray
 
-  constructor(content: string) {
-    this.content = content
+  constructor(tagId: number, matchResult: RegExpMatchArray) {
+    this.#tagId = tagId
+    this.#matchResult = matchResult
   }
 
   indentedContent(spaces: string) {
-    return this.content.split("\n").map((line) => `${spaces}${line}`).join("\n")
+    return this.#content.split("\n").map((line) => `${spaces}${line}`).join("\n")
+  }
+
+  get #content() {
+    return this.#matchResult[0]
+               .split("\n")
+               .map((line) => line.replace(new RegExp(`^${this.#matchResult[1]}`), ""))
+               .join("\n")
   }
 }
 
@@ -36,7 +45,7 @@ class ErbPrettierPlugin {
     // The reason for reverse() is that the index is broken when replacing
     const reverseMatchResults = Array.from(text.matchAll(/([^\S\r\n]*)<%[\s\n]*.*?[\s\n]*%>/gs)).reverse()
     reverseMatchResults.forEach((currentMatchResult, i) => {
-      this.#erbElements[i] = (this.#erbElementFromMatchResult(currentMatchResult))
+      this.#erbElements[i] = new ErbElement(i, currentMatchResult)
     })
     const replacedText = reverseMatchResults.reduce(this.#replaceErbElementToMark.bind(this), text)
     return await prettier.format(replacedText, { parser: "html" })
@@ -65,13 +74,6 @@ class ErbPrettierPlugin {
     return text.substring(0, matchResult.index) +
       this.#erbTag(id) +
       text.substring(matchResult.index + matchResult[0].length)
-  }
-
-  #erbElementFromMatchResult(matchResult: RegExpMatchArray) {
-    assert(typeof matchResult.index == "number")
-    const content =
-      matchResult[0].split("\n").map((line) => line.replace(new RegExp(`^${matchResult[1]}`), "")).join("\n")
-    return new ErbElement(content)
   }
 
   #erbTag(id: number | string) { return `<erb-${id} />` }
