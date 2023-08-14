@@ -1,6 +1,6 @@
 {
   "name": "prettier-plugin-eruby",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Prettier plugin for eRuby(erb)",
   "main": "dist/index.ts",
   "types": "dist/index.d.ts",
