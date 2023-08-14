@@ -2,14 +2,6 @@ import {AST, AstPath, Doc, ParserOptions} from "prettier"
 import * as prettier from "prettier"
 import assert from "assert"
 
-const languages = [
-  {
-    name: "eRuby",
-    parsers: ["eruby-parse"],
-    extensions: [".html.erb"]
-  }
-]
-
 class ErbElement {
   tagId: number = -1
   #matchResult: RegExpMatchArray
@@ -108,24 +100,23 @@ class ErbPrettierPlugin {
     return this.#erbElements.reduce((acc, erbElement) => erbElement.replaceErbTagToElement(acc), result)
   }
 }
+export const languages = [
+  {
+    name: "eRuby",
+    parsers: ["eruby-parse"],
+    extensions: [".html.erb"]
+  }
+]
 
-const erbPrettierPlugin = new ErbPrettierPlugin()
+export const erbPrettierPlugin = new ErbPrettierPlugin()
 
-const parsers = {
+export const parsers = {
   "eruby-parse": erbPrettierPlugin
 }
 
-const printers = {
+export const printers = {
   "eruby-ast": erbPrettierPlugin
 }
 
-const options = {}
-const defaultOptions = {}
-
-export default {
-  languages,
-  parsers,
-  printers,
-  options,
-  defaultOptions
-}
+export const options = {}
+export const defaultOptions = {}
