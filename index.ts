@@ -5,7 +5,8 @@ import assert from "assert"
 const languages = [
   {
     name: "eRuby",
-    parsers: ["eruby-parse"]
+    parsers: ["eruby-parse"],
+    extensions: [".html.erb"]
   }
 ]
 
