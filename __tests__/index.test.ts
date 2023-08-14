@@ -47,3 +47,22 @@ test
 `
   )
 })
+
+test("support options", async () => {
+  const code =
+`  <%= form_with test do %>
+test
+                  <%= link_to test do %> link <% end %>
+      <% end %>
+`
+  const result = await prettier.format(code, { parser: "eruby-parse", plugins: [erubyParse], tabWidth: 4 })
+  expect(result).toBe(
+`<%= form_with test do %>
+    test
+    <%= link_to test do %>
+        link
+    <% end %>
+<% end %>
+`
+  )
+})

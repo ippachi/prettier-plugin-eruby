@@ -61,7 +61,7 @@ class ErbPrettierPlugin {
     this.astFormat = "eruby-ast"
   }
 
-  async parse(text: string, options: ParserOptions): Promise<AST> {
+  async parse(text: string, options: any): Promise<AST> {
     this.#erbElements = []
 
     // The reason for reverse() is that the index is broken when replacing
@@ -84,7 +84,9 @@ class ErbPrettierPlugin {
     })
 
     const replacedText = this.#erbElements.reduce((acc, erbElement) => erbElement.replaceErbElementToTag(acc), text)
-    return await prettier.format(replacedText, { parser: "html" })
+    // TODO: The rangeEnd is useless because it forces a line break by repeating erb 100 times
+    const { rangeEnd: {}, ...htmlOptions } = options
+    return await prettier.format(replacedText, { ...htmlOptions, parser: "html" })
   }
 
   locStart(node: object): number {
