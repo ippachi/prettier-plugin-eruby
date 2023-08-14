@@ -28,3 +28,22 @@ test("format multiple erb elements", async () => {
 `
   )
 })
+
+test("format block", async () => {
+  const code =
+`  <%= form_with test do %>
+test
+                  <%= link_to test do %> link <% end %>
+      <% end %>
+`
+  const result = await prettier.format(code, { parser: "eruby-parse", plugins: [erubyParse] })
+  expect(result).toBe(
+`<%= form_with test do %>
+  test
+  <%= link_to test do %>
+    link
+  <% end %>
+<% end %>
+`
+  )
+})
