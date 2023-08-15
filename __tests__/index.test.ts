@@ -1,6 +1,6 @@
-import {expect, test} from '@jest/globals';
-import * as prettier from "prettier"
-import * as erubyParse from "../index"
+import { expect, test } from "@jest/globals";
+import * as prettier from "prettier";
+import * as erubyParse from "../index";
 
 test("format multiple erb elements", async () => {
   const code =
@@ -13,8 +13,8 @@ test("format multiple erb elements", async () => {
   test4
 %>
 </DIV>
-`
-  const result = await prettier.format(code, { parser: "eruby-parse", plugins: [erubyParse] })
+`;
+  const result = await prettier.format(code, { parser: "eruby-parse", plugins: [erubyParse] });
   expect(result).toBe(
 `<div>
   test
@@ -25,9 +25,9 @@ test("format multiple erb elements", async () => {
     test4
   %>
 </div>
-`
-  )
-})
+`,
+  );
+});
 
 test("format block", async () => {
   const code =
@@ -35,8 +35,8 @@ test("format block", async () => {
 test
                   <%= link_to test do %> link <% end %>
       <% end %>
-`
-  const result = await prettier.format(code, { parser: "eruby-parse", plugins: [erubyParse] })
+`;
+  const result = await prettier.format(code, { parser: "eruby-parse", plugins: [erubyParse] });
   expect(result).toBe(
 `<%= form_with test do %>
   test
@@ -44,9 +44,9 @@ test
     link
   <% end %>
 <% end %>
-`
-  )
-})
+`,
+  );
+});
 
 test("support options", async () => {
   const code =
@@ -54,8 +54,12 @@ test("support options", async () => {
 test
                   <%= link_to test do %> link <% end %>
       <% end %>
-`
-  const result = await prettier.format(code, { parser: "eruby-parse", plugins: [erubyParse], tabWidth: 4 })
+`;
+  const result = await prettier.format(code, {
+    parser: "eruby-parse",
+    plugins: [erubyParse],
+    tabWidth: 4,
+  });
   expect(result).toBe(
 `<%= form_with test do %>
     test
@@ -63,6 +67,6 @@ test
         link
     <% end %>
 <% end %>
-`
-  )
-})
+`,
+  );
+});
