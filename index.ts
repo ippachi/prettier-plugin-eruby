@@ -16,21 +16,20 @@ export class ErbText {
 
   replaceErbTagToMarker() {
     const matches = Array.from(this.#text.matchAll(/<%|%>/gs)).reverse()
-    let tmpText = this.#text
-    let endMatch = null
-    let tagId = 1
 
-    for(const match of matches) {
+    this.#markerText = matches.reduce((acc, match, index, original) => {
       if (match[0] == "%>") {
-        endMatch = match
-      } else {
-        assert(endMatch !== null && match.index && endMatch.index !== undefined)
-        tmpText = tmpText.substring(0, match.index) + `<erb${tagId} />` + tmpText.substring(endMatch.index + "%>".length)
-        this.markerContents[`<erb${tagId} />`] = this.#text.substring(match.index, endMatch.index + "%>".length)
-        tagId++
+        return acc
       }
-    }
-    this.#markerText = tmpText
+
+      const endMatch = original[index - 1]
+      assert(endMatch !== undefined && match.index && endMatch.index !== undefined)
+
+      const marker = `<erb${Object.keys(this.markerContents).length + 1} />`
+      const endOfErbTag = endMatch.index + "%>".length
+      this.markerContents[marker] = this.#text.substring(match.index, endOfErbTag)
+      return acc.substring(0, match.index) + marker + acc.substring(endOfErbTag)
+    }, this.#text)
   }
 }
 
