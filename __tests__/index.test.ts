@@ -70,3 +70,52 @@ test
 `,
   );
 });
+
+test("replace tag", async () => {
+  const code =
+`<DIV>
+  test
+  <% test1 %>
+    <%= test2 %>
+<%=
+  test3
+  test4
+%>
+</DIV>
+`;
+  const erbText = new erubyParse.ErbText(code)
+  erbText.replaceErbTagToMarker()
+  expect(erbText.markerText).toEqual(
+`<DIV>
+  test
+  <erb3 />
+    <erb2 />
+<erb1 />
+</DIV>
+`
+  );
+});
+
+
+test("retain tag content", async () => {
+  const code =
+`<DIV>
+  test
+  <% test1 %>
+    <%= test2 %>
+<%=
+  test3
+  test4
+%>
+</DIV>
+`;
+  const erbText = new erubyParse.ErbText(code)
+  erbText.replaceErbTagToMarker()
+  expect(erbText.markerContents).toEqual(
+    {
+      "<erb1 />": "<%=\n  test3\n  test4\n%>",
+      "<erb2 />": "<%= test2 %>",
+      "<erb3 />": "<% test1 %>",
+    }
+  );
+});

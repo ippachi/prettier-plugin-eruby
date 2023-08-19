@@ -2,6 +2,38 @@ import { AST, AstPath, Doc, ParserOptions } from "prettier";
 import * as prettier from "prettier";
 import assert from "assert";
 
+export class ErbText {
+  #text: string;
+  #markerText: string = "";
+  #markerContents: Record<string, string> = {};
+
+  constructor(text: string) {
+    this.#text = text
+  }
+
+  get markerText() { return this.#markerText }
+  get markerContents() { return this.#markerContents }
+
+  replaceErbTagToMarker() {
+    const matches = Array.from(this.#text.matchAll(/<%|%>/gs)).reverse()
+    let tmpText = this.#text
+    let endMatch = null
+    let tagId = 1
+
+    for(const match of matches) {
+      if (match[0] == "%>") {
+        endMatch = match
+      } else {
+        assert(endMatch !== null && match.index && endMatch.index !== undefined)
+        tmpText = tmpText.substring(0, match.index) + `<erb${tagId} />` + tmpText.substring(endMatch.index + "%>".length)
+        this.markerContents[`<erb${tagId} />`] = this.#text.substring(match.index, endMatch.index + "%>".length)
+        tagId++
+      }
+    }
+    this.#markerText = tmpText
+  }
+}
+
 class ErbElement {
   tagId: number = -1;
   #matchResult: RegExpMatchArray;
