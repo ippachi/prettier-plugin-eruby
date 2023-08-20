@@ -16,18 +16,24 @@ export class ErbText {
 
   replaceErbTagToMarker() {
     const matches = Array.from(this.#text.matchAll(/<%|%>/gs)).reverse()
+    let endMatch: RegExpMatchArray | undefined = undefined
 
     this.#markerText = matches.reduce((acc, match, index, original) => {
-      if (match[0] == "%>") {
+      if (match[0] === "%>") {
+        endMatch ??= match
         return acc
       }
 
-      const endMatch = original[index - 1]
+      const isNestedOpen = original[index + 1]?.[0] === "<%"
+      if (isNestedOpen) return acc
+
       assert(endMatch !== undefined && match.index && endMatch.index !== undefined)
 
       const marker = `<erb${Object.keys(this.markerContents).length + 1} />`
       const endOfErbTag = endMatch.index + "%>".length
       this.markerContents[marker] = this.#text.substring(match.index, endOfErbTag)
+
+      endMatch = undefined
       return acc.substring(0, match.index) + marker + acc.substring(endOfErbTag)
     }, this.#text)
   }
