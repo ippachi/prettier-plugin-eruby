@@ -71,7 +71,7 @@ test
   );
 });
 
-test("replace tag", async () => {
+test("replace erb tag to maker", async () => {
   const code =
 `<DIV>
   test
@@ -103,7 +103,7 @@ test("replace tag", async () => {
   );
 });
 
-test("replace nested erb", async () => {
+test("replace nested erb tag", async () => {
   const code =
 `<DIV>
   test
