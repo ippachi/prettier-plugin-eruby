@@ -2,41 +2,30 @@ import { AST, AstPath, Doc, ParserOptions } from "prettier";
 import * as prettier from "prettier";
 import assert from "assert";
 
-export class ErbText {
-  #text: string;
-  #markerText: string = "";
-  #markerContents: Record<string, string> = {};
+export function replaceErbTagToMarker(text: string): [string, Record<string, string>] {
+  const matches = Array.from(text.matchAll(/<%|%>/gs)).reverse()
+  let endMatch: RegExpMatchArray | undefined = undefined
+  const markerContents: Record<string, string> = {}
 
-  constructor(text: string) {
-    this.#text = text
-  }
+  const markerText = matches.reduce((acc, match, index, original) => {
+    if (match[0] === "%>") {
+      endMatch ??= match
+      return acc
+    }
 
-  get markerText() { return this.#markerText }
-  get markerContents() { return this.#markerContents }
+    const isNestedOpen = original[index + 1]?.[0] === "<%"
+    if (isNestedOpen) return acc
 
-  replaceErbTagToMarker() {
-    const matches = Array.from(this.#text.matchAll(/<%|%>/gs)).reverse()
-    let endMatch: RegExpMatchArray | undefined = undefined
+    assert(endMatch !== undefined && match.index && endMatch.index !== undefined)
 
-    this.#markerText = matches.reduce((acc, match, index, original) => {
-      if (match[0] === "%>") {
-        endMatch ??= match
-        return acc
-      }
+    const marker = `<erb${Object.keys(markerContents).length + 1} />`
+    const endOfErbTag = endMatch.index + "%>".length
+    markerContents[marker] = text.substring(match.index, endOfErbTag)
 
-      const isNestedOpen = original[index + 1]?.[0] === "<%"
-      if (isNestedOpen) return acc
-
-      assert(endMatch !== undefined && match.index && endMatch.index !== undefined)
-
-      const marker = `<erb${Object.keys(this.markerContents).length + 1} />`
-      const endOfErbTag = endMatch.index + "%>".length
-      this.markerContents[marker] = this.#text.substring(match.index, endOfErbTag)
-
-      endMatch = undefined
-      return acc.substring(0, match.index) + marker + acc.substring(endOfErbTag)
-    }, this.#text)
-  }
+    endMatch = undefined
+    return acc.substring(0, match.index) + marker + acc.substring(endOfErbTag)
+  }, text)
+  return [markerText, markerContents]
 }
 
 class ErbElement {
