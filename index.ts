@@ -28,6 +28,15 @@ export function replaceErbTagToMarker(text: string): [string, Record<string, str
   return [markerText, markerContents]
 }
 
+export function replaceMarkerToErbTag(markerText: string, markerContents: Record<string, string>) {
+  return Object.entries(markerContents).reduce((acc, [marker, content]) => {
+    const indent = acc.match(new RegExp(`\n(\\s*)${marker}`))?.[1];
+    const lines = content.split("\n");
+    const indentedContent = [lines[0], ...lines.slice(1).map((line) => `${indent}${line}`)].join("\n");
+    return acc.replace(marker, indentedContent)
+  }, markerText)
+}
+
 class ErbElement {
   tagId: number = -1;
   #matchResult: RegExpMatchArray;

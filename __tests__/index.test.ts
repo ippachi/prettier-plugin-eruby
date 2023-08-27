@@ -132,3 +132,31 @@ test("replace nested erb tag", async () => {
     }
   );
 });
+
+test("replace marker to erb tag", async () => {
+  const markerText =
+`<DIV>
+  test
+  <erb3 />
+    <erb2 />
+      <erb1 />
+</DIV>
+`
+  const markerContents = {
+    "<erb1 />": "<%=\n  test3\n  test4\n%>",
+    "<erb2 />": "<%= test2 %>",
+    "<erb3 />": "<% test1 %>",
+  }
+  const erbText = erubyParse.replaceMarkerToErbTag(markerText, markerContents)
+  expect(erbText).toEqual(
+`<DIV>
+  test
+  <% test1 %>
+    <%= test2 %>
+      <%=
+        test3
+        test4
+      %>
+</DIV>
+`);
+});
