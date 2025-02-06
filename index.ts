@@ -98,7 +98,10 @@ class ErbElement {
 
   // duplicate code
   get isOpenTag() {
-    return /\s*do\s*(\|\s*.*\s*\|\s*)?%>/.test(this.#indentedContent(""));
+    const content = this.#indentedContent("")
+    const isIf = /\s(if|unless)\s/.test(this.#indentedContent(""));
+    const isBlock = /\s*do\s*(\|\s*.*\s*\|\s*)?%>/.test(this.#indentedContent(""));
+    return (isBlock || isIf);
   }
   get isCloseTag() {
     return /<%\s*end\s*%>/.test(this.#indentedContent(""));
