@@ -48,6 +48,31 @@ test
   );
 });
 
+test("format conditional block", async () => {
+  const code =
+`  <%= if foo %>
+test
+                  <%= link_to test do %> link <% end %>
+      <% end %>
+  <%= unless bar %>
+  test
+    <% end %>
+`;
+  const result = await prettier.format(code, { parser: "eruby-parse", plugins: [erubyParse] });
+  expect(result).toBe(
+`<%= if foo %>
+  test
+  <%= link_to test do %>
+    link
+  <% end %>
+<% end %>
+<%= unless bar %>
+  test
+<% end %>
+`,
+  );
+});
+
 test("support options", async () => {
   const code =
 `  <%= form_with test do %>
